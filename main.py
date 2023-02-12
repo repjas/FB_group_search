@@ -11,7 +11,11 @@ from selenium.webdriver.common.action_chains import ActionChains
 from time import sleep
 from datetime import datetime
 import requests
+import json
 
+
+with open('creds.txt') as f:
+    creds = json.load(f)
 
 keyword = input('Please insert search string: ')
 def post_to_webhook(package):
@@ -36,8 +40,8 @@ except TimeoutException:
     pass
 
 # LOGIN
-driver.find_element(By.XPATH, '//input[@name="email"]').send_keys('ask.ted.fb@gmail.com')
-driver.find_element(By.XPATH, '//input[@name="pass"]').send_keys('lalala13@')
+driver.find_element(By.XPATH, '//input[@name="email"]').send_keys(creds['email'])
+driver.find_element(By.XPATH, '//input[@name="pass"]').send_keys(creds['pass'])
 driver.find_element(By.XPATH, '//button[@name="login"]').click()
 sleep(8)
 driver.get('https://www.facebook.com/groups/businessbabesnl')
