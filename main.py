@@ -57,12 +57,12 @@ for keyword in keywords:
     driver.get('https://www.facebook.com/groups/businessbabesnl')
 
     # SEARCH
-    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '//div[@aria-label="Search"]'))).click()
-    search_field = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, '//input[@aria-label="Search this group"]')))
+    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '//div[@aria-label="Search" or @aria-label="Zoeken"]'))).click()
+    search_field = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, '//input[@aria-label="Search this group" or @aria-label="Deze groep zoeken"]')))
     search_field.send_keys(keyword)
     search_field.send_keys(Keys.ENTER)
     sleep(5)
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//input[@aria-label="Most recent"]'))).click()
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//input[@aria-label="Most recent" or @aria-label="Meest recent"]'))).click()
     sleep(3)
     feed = driver.find_elements(By.XPATH, '//div[@role="feed"]/div')
 
