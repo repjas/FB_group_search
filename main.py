@@ -13,6 +13,7 @@ from datetime import datetime
 import requests
 import json
 import pandas as pd
+import locale
 
 
 with open('creds.txt') as f:
@@ -26,6 +27,22 @@ def get_keywords():
 keywords = get_keywords()
 print(keywords)
 
+months = {
+    "januari": "January",
+    'februari':'February',
+    'maart':'March',
+    'mei':'May',
+    'juni':'June',
+    'juli':"July",
+    'augustus':'August',
+    'oktober':'October',
+}
+
+def translate_months(string, dic):
+    for i, j in dic.items():
+        string = string.replace(i, j)
+    return string
+
 def post_to_webhook(package):
     headers = {'Content-Type': 'application/json'}
     r = requests.post('https://hooks.zapier.com/hooks/catch/3009665/bvtptmi/', json=package, headers=headers)
@@ -34,7 +51,7 @@ def post_to_webhook(package):
 now = datetime.now()
 
 for keyword in keywords:
-    content = {'keyword': keyword, 'posts': []}
+    content = {'keyword': keyword, 'search_time': str(now), 'posts': []}
 
     # SET UP DRIVER
     options = Options()
@@ -70,23 +87,30 @@ for keyword in keywords:
     for post in feed:
         try:
             # GET NAME, LINK AND TIMESTRING
-            name = post.find_element(By.XPATH, './/a[@role="link" and contains(@href, "/user/")]/strong/span').text
+            name = post.find_element(By.XPATH, './/h3/span/span/a[@role="link" and contains(@href, "/user/")]/strong/span').text
             href_element = post.find_element(By.XPATH, './/a[@role="link" and contains(@href, "#")]')
             ActionChains(driver).move_to_element(href_element).perform()  # HOVER MOUSE TO SHOW DATETIME AND HREF
             sleep(0.5)
             timestring = driver.find_element(By.XPATH, '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div/div[2]/div').text
+            print(timestring)
             href = post.find_element(By.XPATH, './/a[@role="link" and contains(@href, "/posts/")]').get_attribute('href')
             # CONVERT TIMESTRING TO DATETIME
-            date_time = timestring.split(', ')[1]
+            if 'om' in timestring:
+                timestring = translate_months(timestring, months)
+            date_time = timestring.split(' ',1)[1].replace('om','at')
             date_time2 = datetime.strptime(date_time,'%d %B %Y at %H:%M')
+            print(date_time2)
             days_ago = now-date_time2
+            print(name, days_ago)
             if days_ago.days < 1:
-                dct = {'name': name, 'datetime': date_time, 'href': href}
-                print(dct)
+                dct = {'name': name, 'datetime': str(date_time2), 'href': href}
                 content['posts'].append(dct)
+                print(dct)
             else:
                 continue
-        except:
+        except Exception as e:
+            print(e)
             continue
     driver.quit()
+    print(content)
     post_to_webhook(content)
